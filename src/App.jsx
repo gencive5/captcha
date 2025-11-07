@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+// App.jsx
+import React, { useState } from 'react';
+import TimelapseCaptcha from './components/TimelapseCaptcha';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [captchaResult, setCaptchaResult] = useState(null);
+
+  const handleCaptchaVerify = (success, message) => {
+    setCaptchaResult(success ? 'success' : 'failed');
+    console.log('CAPTCHA Result:', success, message);
+  };
+
+  const handleCaptchaError = (error) => {
+    console.error('CAPTCHA Error:', error);
+    setCaptchaResult('error');
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>BEEEPPP</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <header className="app-header">
+        <h1>Timelapse CAPTCHA Demo</h1>
+        <p>Slide the puzzle piece to complete the moving image</p>
+      </header>
+
+      <main className="app-main">
+        <TimelapseCaptcha
+          onVerify={handleCaptchaVerify}
+          onError={handleCaptchaError}
+          difficulty="medium"
+        />
+
+        {captchaResult === 'success' && (
+          <div className="result success">
+            ✅ CAPTCHA completed successfully!
+          </div>
+        )}
+
+        {captchaResult === 'failed' && (
+          <div className="result error">
+            ❌ CAPTCHA verification failed. Please try again.
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
