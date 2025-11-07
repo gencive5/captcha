@@ -6,11 +6,12 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(0);
-  const [sessionToken, setSessionToken] = useState(null);
   
   const puzzleContainerRef = useRef(null);
   const puzzlePieceRef = useRef(null);
   const puzzleHoleRef = useRef(null);
+  const mainVideoRef = useRef(null);
+  const pieceVideoRef = useRef(null);
   const sliderTrackRef = useRef(null);
   const isDraggingRef = useRef(false);
   
@@ -29,13 +30,16 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
       // Generate challenge
       const challenge = await generateChallenge();
       correctPositionRef.current = challenge.correctPosition;
-      setSessionToken(challenge.token);
       
       // Set initial position
       updatePiecePosition(0);
       
+      // Start videos
+      startVideos();
+      
       setIsLoading(false);
     } catch (error) {
+      console.error('CAPTCHA init error:', error);
       onError?.('Failed to initialize CAPTCHA');
     }
   };
@@ -53,14 +57,20 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     const randomX = Math.floor(Math.random() * (containerWidth - pieceWidth - 40)) + 20;
     
     const mockChallenge = {
-      correctPosition: { x: randomX, y: fixedY },
-      token: `captcha_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      imageSrc: '/api/placeholder/400/300' // Replace with your image path
+      correctPosition: { x: randomX, y: fixedY }
     };
     
     return new Promise((resolve) => {
       setTimeout(() => resolve(mockChallenge), 500);
     });
+  };
+
+  const startVideos = () => {
+    if (mainVideoRef.current && pieceVideoRef.current) {
+      // Just play both videos - they should be the same length and content
+      mainVideoRef.current.play().catch(console.error);
+      pieceVideoRef.current.play().catch(console.error);
+    }
   };
 
   const updatePiecePosition = useCallback((percentage) => {
@@ -73,18 +83,7 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     
     // Update puzzle piece position (only horizontal movement)
     puzzlePieceRef.current.style.left = `${xPos}px`;
-    
-    // Update the background position of the puzzle piece to match the hole position
-    updatePieceBackground(xPos);
   }, []);
-
-  const updatePieceBackground = (xPos) => {
-    if (!puzzlePieceRef.current || !correctPositionRef.current) return;
-
-    const correctPos = correctPositionRef.current;
-    // The puzzle piece shows the portion of the image that should fit in the hole
-    puzzlePieceRef.current.style.backgroundPosition = `-${correctPos.x}px -${correctPos.y}px`;
-  };
 
   // Mouse event handlers
   const handleSliderMouseDown = (e) => {
@@ -169,14 +168,11 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     try {
       const currentX = parseInt(puzzlePieceRef.current?.style.left || '0');
       const tolerance = getToleranceByDifficulty(difficulty);
+      const correctX = correctPositionRef.current?.x || 150;
       
-      const result = await verifyCaptcha({
-        position: currentX,
-        token: sessionToken,
-        tolerance
-      });
+      const isCorrect = Math.abs(currentX - correctX) <= tolerance;
       
-      if (result.success) {
+      if (isCorrect) {
         setIsVerified(true);
         onVerify?.(true);
         
@@ -208,19 +204,6 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     return tolerances[diff] || 15;
   };
 
-  const verifyCaptcha = async (data) => {
-    // Mock verification
-    const correctX = correctPositionRef.current?.x || 150;
-    const isCorrect = Math.abs(data.position - correctX) <= data.tolerance;
-    
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ 
-        success: isCorrect,
-        score: isCorrect ? 100 : 0
-      }), 500);
-    });
-  };
-
   if (isLoading) {
     return (
       <div className="captcha-loading">
@@ -234,7 +217,7 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     <div className="timelapse-captcha">
       <div className="captcha-header">
         <h3>Slide the puzzle piece into the empty space</h3>
-        <p>Match the pattern to complete the image</p>
+        <p>Match the moving pattern to complete the video</p>
       </div>
       
       <div 
@@ -242,15 +225,20 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
         className="puzzle-container"
         style={{ width: containerSizeRef.current.width, height: containerSizeRef.current.height }}
       >
-        {/* Background Image with Puzzle Hole */}
-        <div 
-          className="puzzle-background"
-          style={{ 
-            backgroundImage: `url('/api/placeholder/400/300')`
-          }}
-        />
+        {/* Main Video Background with hole already cut out */}
+        <video
+          ref={mainVideoRef}
+          className="main-video"
+          loop
+          muted
+          playsInline
+          preload="auto"
+        >
+          <source src="/videos/video-hole.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
         
-        {/* Puzzle Hole/Cutout */}
+        {/* Puzzle Hole/Cutout (visual indicator) */}
         {correctPositionRef.current && (
           <div
             ref={puzzleHoleRef}
@@ -262,15 +250,25 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
           />
         )}
         
-        {/* Puzzle Piece */}
+        {/* Puzzle Piece with its own video */}
         <div
           ref={puzzlePieceRef}
           className="puzzle-piece"
-          style={{ 
-            backgroundImage: `url('/api/placeholder/400/300')`,
-            top: correctPositionRef.current ? `${correctPositionRef.current.y}px` : '50%'
+          style={{
+            top: correctPositionRef.current ? `${correctPositionRef.current.y}px` : '110px'
           }}
-        />
+        >
+          <video
+            ref={pieceVideoRef}
+            className="piece-video"
+            loop
+            muted
+            playsInline
+            preload="auto"
+          >
+            <source src="/videos/puzzle-piece.mp4" type="video/mp4" />
+          </video>
+        </div>
       </div>
 
       <div className="slider-section">

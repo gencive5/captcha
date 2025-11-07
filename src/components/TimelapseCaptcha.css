@@ -283,3 +283,139 @@
     flex-direction: column;
   }
 }
+
+/* TimelapseCaptcha.css */
+.timelapse-captcha {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.captcha-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.captcha-header h3 {
+  margin: 0 0 8px 0;
+  color: #2d3748;
+  font-size: 1.25rem;
+}
+
+.captcha-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.puzzle-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f7fafc;
+  margin-bottom: 20px;
+}
+
+.main-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #000;
+}
+
+.puzzle-hole {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 2px dashed #e53e3e;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 2px #fed7d7, 0 0 12px rgba(229, 62, 62, 0.3);
+  animation: pulse-hole 2s infinite;
+  z-index: 5;
+}
+
+@keyframes pulse-hole {
+  0%, 100% { border-color: #e53e3e; }
+  50% { border-color: #fc8181; }
+}
+
+.puzzle-piece {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  top: 110px;
+  left: 0;
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  box-shadow: 
+    0 0 0 2px #4299e1,
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.puzzle-piece:hover {
+  box-shadow: 
+    0 0 0 2px #3182ce,
+    0 6px 16px rgba(0, 0, 0, 0.4);
+  transform: scale(1.05);
+}
+
+.puzzle-piece.correct-position {
+  box-shadow: 
+    0 0 0 3px #48bb78,
+    0 6px 20px rgba(72, 187, 120, 0.4);
+  border-color: #48bb78;
+  transform: none;
+}
+
+.piece-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+/* Rest of the CSS remains the same as before */
+.slider-section {
+  margin: 30px 0;
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: #edf2f7;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slider-handle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: #4299e1;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  top: -2px;
+  transform: translateX(-50%);
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(66, 153, 225, 0.4);
+  transition: all 0.2s ease;
+}
+
