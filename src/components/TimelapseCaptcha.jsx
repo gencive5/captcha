@@ -8,9 +8,9 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   const [sliderPosition, setSliderPosition] = useState(0);
   const [sessionToken, setSessionToken] = useState(null);
   
-  const mainVideoRef = useRef(null);
-  const pieceVideoRef = useRef(null);
+  const puzzleContainerRef = useRef(null);
   const puzzlePieceRef = useRef(null);
+  const puzzleHoleRef = useRef(null);
   const sliderTrackRef = useRef(null);
   const isDraggingRef = useRef(false);
   
@@ -26,13 +26,10 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     try {
       setIsLoading(true);
       
-      // Generate challenge on server
+      // Generate challenge
       const challenge = await generateChallenge();
       correctPositionRef.current = challenge.correctPosition;
       setSessionToken(challenge.token);
-      
-      // Load videos
-      await loadVideos();
       
       // Set initial position
       updatePiecePosition(0);
@@ -44,11 +41,20 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   };
 
   const generateChallenge = async () => {
-    // In real implementation, this would be an API call
+    // For demo, using a placeholder image - replace with your actual image
+    const pieceWidth = 80;
+    const pieceHeight = 80;
+    const containerWidth = 400;
+    const containerHeight = 300;
+    
+    // Random position for the puzzle hole (within bounds)
+    const randomX = Math.floor(Math.random() * (containerWidth - pieceWidth - 40)) + 20;
+    const randomY = Math.floor(Math.random() * (containerHeight - pieceHeight - 40)) + 20;
+    
     const mockChallenge = {
-      correctPosition: Math.floor(Math.random() * 300),
+      correctPosition: { x: randomX, y: randomY },
       token: `captcha_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      videoSrc: '/captcha-timelapse.mp4' // Your timelapse video
+      imageSrc: '/api/placeholder/400/300' // Replace with your image path
     };
     
     return new Promise((resolve) => {
@@ -56,67 +62,27 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     });
   };
 
-  const loadVideos = () => {
-    return new Promise((resolve) => {
-      let videosLoaded = 0;
-      
-      const checkLoaded = () => {
-        videosLoaded++;
-        if (videosLoaded === 2) {
-          synchronizeVideos();
-          resolve();
-        }
-      };
-
-      if (mainVideoRef.current) {
-        mainVideoRef.current.addEventListener('loadeddata', checkLoaded);
-        mainVideoRef.current.addEventListener('canplay', checkLoaded);
-      }
-      
-      if (pieceVideoRef.current) {
-        pieceVideoRef.current.addEventListener('loadeddata', checkLoaded);
-        pieceVideoRef.current.addEventListener('canplay', checkLoaded);
-      }
-    });
-  };
-
-  const synchronizeVideos = () => {
-    if (!mainVideoRef.current || !pieceVideoRef.current) return;
-
-    // Sync playback
-    mainVideoRef.current.addEventListener('timeupdate', () => {
-      if (pieceVideoRef.current) {
-        pieceVideoRef.current.currentTime = mainVideoRef.current.currentTime;
-      }
-    });
-
-    // Set random start time for variation
-    const randomStart = Math.random() * (mainVideoRef.current.duration || 10);
-    mainVideoRef.current.currentTime = randomStart;
-    
-    // Start playback
-    mainVideoRef.current.play().catch(console.error);
-    pieceVideoRef.current.play().catch(console.error);
-  };
-
   const updatePiecePosition = useCallback((percentage) => {
-    if (!puzzlePieceRef.current || !mainVideoRef.current) return;
+    if (!puzzlePieceRef.current || !puzzleContainerRef.current) return;
 
-    const maxX = containerSizeRef.current.width - puzzlePieceRef.current.offsetWidth;
+    const containerWidth = puzzleContainerRef.current.offsetWidth;
+    const pieceWidth = puzzlePieceRef.current.offsetWidth;
+    const maxX = containerWidth - pieceWidth;
     const xPos = (percentage / 100) * maxX;
     
-    // Update puzzle piece position
+    // Update puzzle piece position (only horizontal movement)
     puzzlePieceRef.current.style.left = `${xPos}px`;
     
-    // Update video crop to show correct portion
-    updateVideoCrop(xPos);
+    // Update the background position of the puzzle piece to match the hole position
+    updatePieceBackground(xPos);
   }, []);
 
-  const updateVideoCrop = (xPos) => {
-    if (!pieceVideoRef.current || !correctPositionRef.current) return;
+  const updatePieceBackground = (xPos) => {
+    if (!puzzlePieceRef.current || !correctPositionRef.current) return;
 
-    const yPos = correctPositionRef.current.y;
-    pieceVideoRef.current.style.transform = `translate(-${xPos}px, -${yPos}px)`;
+    const correctPos = correctPositionRef.current;
+    // The puzzle piece shows the portion of the image that should fit in the hole
+    puzzlePieceRef.current.style.backgroundPosition = `-${correctPos.x}px -${correctPos.y}px`;
   };
 
   // Mouse event handlers
@@ -143,7 +109,30 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     isDraggingRef.current = false;
     document.removeEventListener('mousemove', handleMouseMove);
     document.removeEventListener('mouseup', handleMouseUp);
+    
+    // Auto-verify if close to correct position
+    autoVerifyIfClose();
   }, [handleMouseMove]);
+
+  const autoVerifyIfClose = () => {
+    if (!puzzlePieceRef.current || !correctPositionRef.current) return;
+
+    const currentX = parseInt(puzzlePieceRef.current.style.left || '0');
+    const correctX = correctPositionRef.current.x;
+    const tolerance = getToleranceByDifficulty(difficulty);
+    
+    if (Math.abs(currentX - correctX) <= tolerance) {
+      // Snap to correct position
+      const percentage = (correctX / (containerSizeRef.current.width - 80)) * 100;
+      setSliderPosition(percentage);
+      updatePiecePosition(percentage);
+      
+      // Auto-verify
+      setTimeout(() => {
+        handleVerify(true);
+      }, 300);
+    }
+  };
 
   // Touch event handlers for mobile
   const handleSliderTouchStart = (e) => {
@@ -171,9 +160,11 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
     isDraggingRef.current = false;
     document.removeEventListener('touchmove', handleTouchMove);
     document.removeEventListener('touchend', handleTouchEnd);
+    
+    autoVerifyIfClose();
   }, [handleTouchMove]);
 
-  const handleVerify = async () => {
+  const handleVerify = async (autoVerified = false) => {
     try {
       const currentX = parseInt(puzzlePieceRef.current?.style.left || '0');
       const tolerance = getToleranceByDifficulty(difficulty);
@@ -187,8 +178,17 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
       if (result.success) {
         setIsVerified(true);
         onVerify?.(true);
+        
+        // Visual feedback - snap piece into hole
+        if (puzzlePieceRef.current && correctPositionRef.current) {
+          puzzlePieceRef.current.style.left = `${correctPositionRef.current.x}px`;
+          puzzlePieceRef.current.style.top = `${correctPositionRef.current.y}px`;
+          puzzlePieceRef.current.style.boxShadow = '0 0 0 2px #48bb78, 0 4px 12px rgba(0, 0, 0, 0.3)';
+        }
       } else {
-        onVerify?.(false, 'Verification failed');
+        if (!autoVerified) {
+          onVerify?.(false, 'Verification failed');
+        }
         // Reset for retry
         await initializeCaptcha();
         setSliderPosition(0);
@@ -200,16 +200,16 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
 
   const getToleranceByDifficulty = (diff) => {
     const tolerances = {
-      easy: 20,
-      medium: 10,
-      hard: 5
+      easy: 25,
+      medium: 15,
+      hard: 8
     };
-    return tolerances[diff] || 10;
+    return tolerances[diff] || 15;
   };
 
   const verifyCaptcha = async (data) => {
-    // Mock verification - replace with actual API call
-    const correctX = correctPositionRef.current?.x || 0;
+    // Mock verification
+    const correctX = correctPositionRef.current?.x || 150;
     const isCorrect = Math.abs(data.position - correctX) <= data.tolerance;
     
     return new Promise((resolve) => {
@@ -232,39 +232,43 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   return (
     <div className="timelapse-captcha">
       <div className="captcha-header">
-        <h3>Slide to complete the puzzle</h3>
-        <p>Align the moving piece with the background</p>
+        <h3>Slide the puzzle piece into the empty space</h3>
+        <p>Match the pattern to complete the image</p>
       </div>
       
       <div 
-        className="timelapse-container"
+        ref={puzzleContainerRef}
+        className="puzzle-container"
         style={{ width: containerSizeRef.current.width, height: containerSizeRef.current.height }}
       >
-        <video
-          ref={mainVideoRef}
-          className="main-timelapse"
-          loop
-          muted
-          playsInline
-        >
-          <source src="/captcha-timelapse.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        {/* Background Image with Puzzle Hole */}
+        <div 
+          className="puzzle-background"
+          style={{ 
+            backgroundImage: `url('/api/placeholder/400/300')`
+          }}
+        />
         
+        {/* Puzzle Hole/Cutout */}
+        {correctPositionRef.current && (
+          <div
+            ref={puzzleHoleRef}
+            className="puzzle-hole"
+            style={{
+              left: `${correctPositionRef.current.x}px`,
+              top: `${correctPositionRef.current.y}px`
+            }}
+          />
+        )}
+        
+        {/* Puzzle Piece */}
         <div
           ref={puzzlePieceRef}
           className="puzzle-piece"
-        >
-          <video
-            ref={pieceVideoRef}
-            className="piece-timelapse"
-            loop
-            muted
-            playsInline
-          >
-            <source src="/captcha-timelapse.mp4" type="video/mp4" />
-          </video>
-        </div>
+          style={{ 
+            backgroundImage: `url('/api/placeholder/400/300')`
+          }}
+        />
       </div>
 
       <div className="slider-section">
@@ -281,30 +285,30 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
         </div>
         
         <div className="slider-labels">
-          <span>← Slide →</span>
+          <span>← Slide to fit the puzzle →</span>
         </div>
       </div>
 
       <div className="captcha-actions">
         <button 
-          onClick={handleVerify}
+          onClick={() => handleVerify(false)}
           disabled={isVerified}
           className={`verify-btn ${isVerified ? 'verified' : ''}`}
         >
-          {isVerified ? '✓ Verified' : 'Verify'}
+          {isVerified ? '✓ Verified' : 'Verify Position'}
         </button>
         
         <button 
           onClick={initializeCaptcha}
           className="refresh-btn"
         >
-          ↻ Refresh
+          ↻ New Puzzle
         </button>
       </div>
 
       {isVerified && (
         <div className="success-message">
-          ✓ CAPTCHA verified successfully!
+          ✓ Puzzle completed successfully!
         </div>
       )}
     </div>
