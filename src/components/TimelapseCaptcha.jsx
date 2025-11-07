@@ -226,14 +226,7 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
         style={{ width: containerSizeRef.current.width, height: containerSizeRef.current.height }}
       >
         {/* Main Video Background with hole already cut out */}
-        <video
-          ref={mainVideoRef}
-          className="main-video"
-          loop
-          muted
-          playsInline
-          preload="auto"
-        >
+        <video preload="auto" muted playsInline autoPlay loop>
           <source src="/videos/video-hole.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
@@ -258,14 +251,7 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
             top: correctPositionRef.current ? `${correctPositionRef.current.y}px` : '110px'
           }}
         >
-          <video
-            ref={pieceVideoRef}
-            className="piece-video"
-            loop
-            muted
-            playsInline
-            preload="auto"
-          >
+          <video preload="auto" muted playsInline autoPlay loop>
             <source src="/videos/puzzle-piece.mp4" type="video/mp4" />
           </video>
         </div>
