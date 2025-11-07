@@ -41,18 +41,19 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   };
 
   const generateChallenge = async () => {
-    // For demo, using a placeholder image - replace with your actual image
     const pieceWidth = 80;
     const pieceHeight = 80;
     const containerWidth = 400;
     const containerHeight = 300;
     
-    // Random position for the puzzle hole (within bounds)
+    // Fixed Y position for both piece and hole (centered vertically)
+    const fixedY = (containerHeight - pieceHeight) / 2;
+    
+    // Random X position for the puzzle hole (within bounds)
     const randomX = Math.floor(Math.random() * (containerWidth - pieceWidth - 40)) + 20;
-    const randomY = Math.floor(Math.random() * (containerHeight - pieceHeight - 40)) + 20;
     
     const mockChallenge = {
-      correctPosition: { x: randomX, y: randomY },
+      correctPosition: { x: randomX, y: fixedY },
       token: `captcha_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       imageSrc: '/api/placeholder/400/300' // Replace with your image path
     };
@@ -182,8 +183,8 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
         // Visual feedback - snap piece into hole
         if (puzzlePieceRef.current && correctPositionRef.current) {
           puzzlePieceRef.current.style.left = `${correctPositionRef.current.x}px`;
-          puzzlePieceRef.current.style.top = `${correctPositionRef.current.y}px`;
-          puzzlePieceRef.current.style.boxShadow = '0 0 0 2px #48bb78, 0 4px 12px rgba(0, 0, 0, 0.3)';
+          puzzlePieceRef.current.style.boxShadow = '0 0 0 3px #48bb78, 0 4px 12px rgba(72, 187, 120, 0.4)';
+          puzzlePieceRef.current.classList.add('correct-position');
         }
       } else {
         if (!autoVerified) {
@@ -266,7 +267,8 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
           ref={puzzlePieceRef}
           className="puzzle-piece"
           style={{ 
-            backgroundImage: `url('/api/placeholder/400/300')`
+            backgroundImage: `url('/api/placeholder/400/300')`,
+            top: correctPositionRef.current ? `${correctPositionRef.current.y}px` : '50%'
           }}
         />
       </div>
