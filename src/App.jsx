@@ -22,7 +22,6 @@ function App() {
       <div className="app">
         <header className="app-header">
           <h1>Timelapse CAPTCHA Demo</h1>
-          <p>Slide the puzzle piece to complete the moving image</p>
         </header>
 
         <main className="app-main">
