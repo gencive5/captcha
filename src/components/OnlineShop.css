@@ -16,10 +16,11 @@
 }
 
 .shop-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: transparent;
   backdrop-filter: blur(10px);
   padding: 1rem 2rem;
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  position: fixed;
 }
 
 .shop-nav {
@@ -135,7 +136,7 @@
 }
 
 .cart {
-  background: white;
+  background: transparent;
   border-radius: 0;
   padding: 1.5rem;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -144,7 +145,7 @@
 .cart h3 {
   margin: 0 0 1rem 0;
   color: #2d3748;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid transparent;
   padding-bottom: 0.5rem;
 }
 
@@ -201,7 +202,7 @@
 }
 
 .cart-total {
-  border-top: 2px solid #e2e8f0;
+  border-top: 2px solid transparent;
   padding-top: 1rem;
   margin-bottom: 1rem;
   text-align: center;
@@ -241,5 +242,90 @@
   
   .cart-sidebar {
     position: static;
+  }
+}
+
+
+
+/* Volume Control Styles */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+}
+
+.volume-control label {
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.volume-slider {
+  width: 80px;
+  height: 4px;
+  background: transparent;
+  outline: none;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.volume-slider:hover {
+  opacity: 1;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #48bb78;
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #48bb78;
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+}
+
+.volume-percentage {
+  color: #2d3748;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 35px;
+  text-align: center;
+}
+
+/* Mobile Responsiveness for Volume Control */
+@media (max-width: 768px) {
+  .header-controls {
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+  
+  .volume-control {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .shop-nav {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
   }
 }

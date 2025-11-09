@@ -216,7 +216,7 @@ const TimelapseCaptcha = ({ onVerify, onError, difficulty = 'medium' }) => {
   return (
     <div className="timelapse-captcha">
       <div className="captcha-header">
-        <h3>Complete the puzzle to shop timelapse</h3>
+        <h3>Drag to shop timelapse</h3>
       </div>
       
       <div 
