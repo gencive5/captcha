@@ -8,31 +8,27 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
   const products = [
     {
       id: 1,
-      name: "Premium Wireless Headphones",
-      price: 199.99,
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop",
-      description: "High-quality wireless headphones with noise cancellation"
+      name: "pants",
+      price: 100,
+      image: "/images/1L8A1395.webp",
     },
     {
       id: 2,
-      name: "Smart Fitness Watch",
-      price: 299.99,
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-      description: "Track your fitness and stay connected"
+      name: "shorts",
+      price: 100,
+      image: "/images/1L8A1382.webp",
     },
     {
       id: 3,
-      name: "Portable Bluetooth Speaker",
-      price: 89.99,
-      image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=300&fit=crop",
-      description: "Crystal clear sound in a compact design"
+      name: "sweater",
+      price: 200,
+      image: "/images/1L8A1353.webp",
     },
     {
       id: 4,
-      name: "Gaming Keyboard RGB",
-      price: 129.99,
-      image: "https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=300&fit=crop",
-      description: "Mechanical keyboard with customizable RGB lighting"
+      name: "jeans",
+      price: 120,
+      image: "/images/1L8A1238.webp",
     }
   ];
 
@@ -62,16 +58,15 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
     <div className="online-shop">
       <header className="shop-header">
         <div className="shop-nav">
-          <h1>🛍️ TechShop Online</h1>
+          <h1>timelapse</h1>
           <button onClick={onReturnToCaptcha} className="return-btn">
-            🔒 Back to CAPTCHA
+            Back to CAPTCHA
           </button>
         </div>
       </header>
 
       <div className="shop-container">
         <main className="products-grid">
-          <h2>Featured Products</h2>
           <div className="products">
             {products.map(product => (
               <div key={product.id} className="product-card">
@@ -96,9 +91,9 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
 
         <aside className="cart-sidebar">
           <div className="cart">
-            <h3>🛒 Shopping Cart ({cart.length})</h3>
+            <h3>({cart.length})</h3>
             {cart.length === 0 ? (
-              <p className="empty-cart">Your cart is empty</p>
+              <p></p>
             ) : (
               <>
                 <div className="cart-items">
