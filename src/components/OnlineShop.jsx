@@ -75,7 +75,7 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
                   <h3>{product.name}</h3>
                   <p className="product-description">{product.description}</p>
                   <div className="product-footer">
-                    <span className="price">${product.price}</span>
+                    <span className="price">€{product.price}</span>
                     <button 
                       onClick={() => addToCart(product)}
                       className="add-to-cart-btn"
@@ -101,7 +101,7 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
                     <div key={item.id} className="cart-item">
                       <div className="item-info">
                         <span className="item-name">{item.name}</span>
-                        <span className="item-price">${item.price} x {item.quantity}</span>
+                        <span className="item-price">€{item.price} x {item.quantity}</span>
                       </div>
                       <button 
                         onClick={() => removeFromCart(item.id)}
@@ -113,7 +113,7 @@ const OnlineShop = ({ onReturnToCaptcha }) => {
                   ))}
                 </div>
                 <div className="cart-total">
-                  <strong>Total: ${getTotalPrice().toFixed(2)}</strong>
+                  <strong>Total: €{getTotalPrice().toFixed(2)}</strong>
                 </div>
                 <button className="checkout-btn">
                   Proceed to Checkout
