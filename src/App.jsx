@@ -36,11 +36,6 @@ function App() {
       <div className="app">
         {!showShop ? (
           <>
-            <header className="app-header">
-              <h1>Timelapse CAPTCHA Demo</h1>
-              <p>Complete the puzzle to access our online shop</p>
-            </header>
-
             <main className="app-main">
               <TimelapseCaptcha
                 onVerify={handleCaptchaVerify}
